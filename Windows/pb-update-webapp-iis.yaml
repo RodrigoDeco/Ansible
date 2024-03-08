@@ -1,0 +1,53 @@
+- name: Update IIS Web App
+  hosts: iis
+
+  vars:
+    APP_NAME: ""
+    ZIP_PATH: ""
+    WORKDIR: "C:\\inetpub"
+    USER: ""
+    DATETIME: "{{ ansible_date_time.date }}T{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+
+  tasks:
+  - name: Stop an application pool
+    community.windows.win_iis_webapppool:
+      name: {{ APP_NAME }}
+      state: stopped
+      
+  - name: Stop IIS Site
+    ansible.windows.win_command:
+      cmd: 'StopIISSite -Name "{{ APP_NAME }}" -Confirm:$False'
+      
+  - name: Create directory structure
+    ansible.windows.win_file:
+      path: "C:\\Backup-{{ DATETIME }}"
+      state: directory
+      
+  - name: Create directory structure
+    ansible.windows.win_file:
+      path: "C:\\Backup-{{ DATETIME }}\\Binarios"
+      state: directory
+
+  - name: Create backup
+    community.windows.win_zip:
+      src: "{{ WORKDIR }}\\{{ APP_NAME }}"
+      dest: "C:\\Backup-{{ DATETIME }}\\Backup.zip"
+
+  - name: Copy source code
+    ansible.windows.win_copy:
+      src: "{{ ZIP_PATH }}"
+      dest: "C:\\Backup-{{ DATETIME }}\\Binarios\\update-web.zip"
+
+  - name: Unzip web app
+    community.windows.win_unzip:
+      src: "C:\\Backup-{{ DATETIME }}\\Binarios\\update-web.zip"
+      dest: "{{ WORKDIR }}\\{{ APP_NAME }}"
+
+  - name: Start application pool
+    community.windows.win_iis_webapppool:
+      name: {{ APP_NAME }}
+      state: started
+
+  - name: Start IIS Site
+    ansible.windows.win_command:
+      cmd: 'StartIISSite -Name "{{ APP_NAME }}"
