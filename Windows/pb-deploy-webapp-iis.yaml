@@ -1,0 +1,50 @@
+- name: Deploy New IIS Web App
+  hosts: [INVENTORY]
+  vars:
+    PORT: ""
+    APP_NAME: ""
+    ZIP_PATH: ""
+    WORKDIR: "C:\\inetpub"
+    USER: ""
+    DATETIME: "{{ ansible_date_time.date }}T{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+    
+  tasks:
+  - name: Copy source code
+    ansible.windows.win_copy:
+      src: "{{ ZIP_PATH }}"
+      dest: "{{ WORKDIR }}\\new_web_app.zip"
+
+  - name: Unzip web app
+    community.windows.win_unzip:
+      src: "{{ WORKDIR }}\\new_web_app.zip"
+      dest: "{{ WORKDIR }}\\{{ APP_NAME }}"
+
+  - name: Create a new application pool
+    win_iis_webapppool:
+      name: "{{ APP_NAME }}"
+      state: started
+
+  - name: Add acl user to workdir path
+    win_acl:
+      path: "{{ WORKDIR }}\\{{ APP_NAME }}"
+      user: "{{ USER }}"
+      rights: FullControl
+      type: allow
+      state: present
+      inherit: ContainerInherit, ObjectInherit
+      propagation: "None"
+
+  - name: Deploy IIS site
+    win_iis_website:
+      name: "{{ APP_NAME }}"
+      state: started
+      port: "{{ PORT }}"
+      ip: "*"
+      application_pool: "{{ APP_NAME }}"
+      physical_path: "{{ WORKDIR }}\\{{ APP_NAME }}"
+    register: website
+
+  - name: Remove zip file
+    ansible.windows.win_file:
+      path: "{{ WORKDIR }}\\new_web_app.zip"
+      state: absent
