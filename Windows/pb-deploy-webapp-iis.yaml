@@ -3,11 +3,11 @@
 
   vars:
     HOSTS: ""
-    PORT: ""
     APP_NAME: ""
     ZIP_PATH: ""
-    WORKDIR: "C:\\inetpub"
+    PORT: ""
     USER: ""
+    WORKDIR: "C:\\inetpub"
     DATETIME: "{{ ansible_date_time.date }}T{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
     
   tasks:
