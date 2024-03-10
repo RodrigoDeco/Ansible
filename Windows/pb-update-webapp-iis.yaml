@@ -1,7 +1,8 @@
 - name: Update IIS Web App
-  hosts: iis
+  hosts: "{{ HOSTS }}"
 
   vars:
+    HOSTS: ""
     APP_NAME: ""
     ZIP_PATH: ""
     WORKDIR: "C:\\inetpub"
@@ -11,12 +12,13 @@
   tasks:
   - name: Stop an application pool
     community.windows.win_iis_webapppool:
-      name: {{ APP_NAME }}
+      name: "{{ APP_NAME }}"
       state: stopped
       
-  - name: Stop IIS Site
-    ansible.windows.win_command:
-      cmd: 'StopIISSite -Name "{{ APP_NAME }}" -Confirm:$False'
+  - name: Stop Web Site
+    win_iis_website:
+      name: "{{ APP_NAME }}"
+      state: stopped
       
   - name: Create directory structure
     ansible.windows.win_file:
@@ -45,9 +47,10 @@
 
   - name: Start application pool
     community.windows.win_iis_webapppool:
-      name: {{ APP_NAME }}
+      name: "{{ APP_NAME }}"
       state: started
 
-  - name: Start IIS Site
-    ansible.windows.win_command:
-      cmd: 'StartIISSite -Name "{{ APP_NAME }}"'
+  - name: Start Web Site
+    win_iis_website:
+      name: "{{ APP_NAME }}"
+      state: started
