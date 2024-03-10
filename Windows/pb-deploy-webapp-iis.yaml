@@ -1,6 +1,8 @@
 - name: Deploy New IIS Web App
-  hosts: [INVENTORY]
+  hosts: "{{ HOSTS }}"
+
   vars:
+    HOSTS: ""
     PORT: ""
     APP_NAME: ""
     ZIP_PATH: ""
