@@ -50,4 +50,4 @@
 
   - name: Start IIS Site
     ansible.windows.win_command:
-      cmd: 'StartIISSite -Name "{{ APP_NAME }}"
+      cmd: 'StartIISSite -Name "{{ APP_NAME }}"'
